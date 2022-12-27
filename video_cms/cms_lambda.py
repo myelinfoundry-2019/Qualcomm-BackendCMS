@@ -14,9 +14,11 @@ import videoMetadata
 
 testFunctionRawPath="/user/test" #GET, BODY
 
-channelAddRawPath = "/user/{userId}/channel/addChannel" #POST, BODY
-
-
+channelAddRawPath = "/user/{userId}/channels/addChannel" #POST, BODY
+channelsViewRawPath = "/user/{userId}/channels" #GET, BODY
+channelSearchRawPath = "/user/{userId}/channels/{searchItem}" #GET, BODY
+updateChannelRawPath = "/user/{userId}/channels/updateChannel/{channelId}" #Patch, BODY
+deleteChannelRawPath = "/user/{userId}/channels/deleteChannel/{channelId}" #DELETE, BODY
 
 
 dbLogin={}
@@ -49,6 +51,30 @@ def lambda_handler(event, context):
         
         decodedBody = json.loads(event['body'])
         return channels.channelAdd(userId,decodedBody,connection)
+        
+    if event['rawPath'] == channelsViewRawPath:
+        print("Channels view success")
+        userId = event['pathParameters']['userId']
+        return channels.viewChannels(userId,connection)
+        
+    if event['rawPath'] == channelSearchRawPath:
+        print("Channel view success")
+        userId = event['pathParameters']['userId']
+        searchItem = event['pathParameters']['searchItem']
+        return channels.searchChannel(userId,searchItem,connection)
+        
+    if event['rawPath'] == updateChannelRawPath:
+        print("Channel success")
+        userId = event['pathParameters']['userId']
+        channelId = event['pathParameters']['channelId']
+        decodedBody = json.loads(event['body'])
+        return channels.updateChannel(userId,channelId,decodedBody,connection)
+        
+    if event['rawPath'] == deleteChannelRawPath:
+        print("Channel success")
+        userId = event['pathParameters']['userId']
+        channelId = event['pathParameters']['channelId']
+        return channels.deleteChannel(userId,channelId,connection)
             
     
     
