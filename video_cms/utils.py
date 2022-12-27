@@ -9,5 +9,5 @@ def response(status,response_data={}):
     responseObject['statusCode']=200
     responseObject['headers']={}
     responseObject['headers']['Content-Type']="application/json"
-    responseObject['body']=json.dumps(response_data_final)
+    responseObject['body']=json.dumps(response_data_final,default = str)
     return responseObject
