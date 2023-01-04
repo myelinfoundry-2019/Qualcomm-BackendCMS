@@ -1,10 +1,11 @@
 import utils
 
-def channelAdd(userId,decodedBody,connection):
+def channelAdd(decodedBody,connection):
     print("Received channelAdd request")
     
     cursor = connection.cursor()  # get the cursor object
     
+    userId=decodedBody["user_id"]
     channel_name = decodedBody["channel_name"]
     channel_description = decodedBody["channel_Description"]
     channel_profile_pic = decodedBody["channel_profile_pic"]
@@ -63,6 +64,7 @@ def channelAdd(userId,decodedBody,connection):
     return utils.response("Passed",response_data)
     
 def viewChannels(userId,connection):
+  print("view channel request")
   cursor = connection.cursor()
   result=[]
   fields=['id','channel_name','channel_description','channel_profile_pic','channel_user_id','created_at','category']
@@ -70,7 +72,7 @@ def viewChannels(userId,connection):
   sql="""SELECT EXISTS(SELECT * FROM channel where channel_user_id=%s)"""
   cursor.execute(sql,(userId,))
   extracted_data=cursor.fetchone()
-
+  
   if extracted_data[0]!=0:
     sql="""SELECT * from channel where channel_user_id=%s"""
     cursor.execute(sql,(userId,))
@@ -90,46 +92,54 @@ def viewChannels(userId,connection):
   return utils.response("Passed",response_data)
   
   
-def searchChannel(userId,searchItem,connection):
-  cursor = connection.cursor()
+def searchChannel(searchItem,connection):
+  print("received search item request")
+  cursor=connection.cursor()
   result=[]
   fields=['id','channel_name','channel_description','channel_profile_pic','channel_user_id','created_at','category']
   
-  sql="""SELECT EXISTS(SELECT * FROM channel where channel_user_id=%s)"""
-  cursor.execute(sql,(userId,))
+  sql="""SELECT EXISTS(SELECT * FROM channel)"""
+  cursor.execute(sql)
   extracted_data=cursor.fetchone()
-
-  if extracted_data[0]!=0:
-    sql="""SELECT * from channel where channel_name like %s"""
-    cursor.execute(sql,("%"+searchItem+"%",))
-    extracted_data_ex=cursor.fetchall()
-
-    for row in extracted_data_ex:
-      response_data=dict(zip(fields,row))
-      result.append(response_data)
-      response_data={'message':'channel','data':result}
-      #print(response_data)
-  else:
-    cursor.close()
-    response_data={'message':'channel not exist for user','data':[]}
-    #print("result->",response_data)
   
-  #response_data={'message':'user not exist','data':[]}
-  return utils.response("Passed",response_data)
+  if extracted_data[0]!=0:
+      sql="""SELECT * from channel where channel_name like %s"""
+      cursor.execute(sql,("%"+searchItem+"%",))
+      extracted_data_ex=cursor.fetchall()
+      
+      print("Length->",len(extracted_data_ex))
+      
+      if len(extracted_data_ex)!=0:
+          for row in extracted_data_ex:
+              response_data=dict(zip(fields,row))
+              result.append(response_data)
+          response_data={'message':'channel','data':result}   
+          return utils.response("response_data",response_data)
+      else:
+          cursor.close()
+          response_data={'message':'channel not exist for user','data':[]}
+      
+          return utils.response("Passed",response_data)     
+  else:
+      cursor.close()
+      response_data={'message':'channel not exist for user','data':[]}
+  
+      return utils.response("Failed",response_data)
 
 
-def updateChannel(userId,channelId,decodedBody,connection):
+def updateChannel(decodedBody,connection):
   cursor=connection.cursor()
   result=[]
   channel_name = decodedBody["channel_name"]
   channel_description = decodedBody["channel_Description"]
   channel_profile_pic = decodedBody["channel_profile_pic"]
-  channel_user_id = userId
+  userId=decodedBody["userId"]
+  channelId=decodedBody["channelId"]
   category = decodedBody["category"]
   fields=['id','channel_name','channel_description','channel_profile_pic','created_at','channel_user_id','category']
 
   sql="""SELECT EXISTS(SELECT * FROM channel where channel_user_id=%s)"""
-  cursor.execute(sql,(channel_user_id,))
+  cursor.execute(sql,(userId,))
   extracted_data=cursor.fetchone()
 
   if extracted_data[0]!=0:
