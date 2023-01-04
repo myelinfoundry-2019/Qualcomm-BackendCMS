@@ -6,27 +6,40 @@ import followers
 import comments
 import videoMetadata
 
+
 #addsIngestRawPath = "/channel/video/addIngest" # POST , BODY
 
 #categoryAddRawPath = "/user/category/addCategory" # POST, BODY
 
 #videoChannelRawPath='/video/videoChannel' # POST, BODY
 
-testFunctionRawPath="/user/test" #GET, BODY
+testFunctionRawPath="/qualcommbackendcms/test" #GET, BODY
 
-channelAddRawPath = "/user/{userId}/channels/addChannel" #POST, BODY
-channelsViewRawPath = "/user/{userId}/channels" #GET, BODY
-channelSearchRawPath = "/user/{userId}/channels/{searchItem}" #GET, BODY
-updateChannelRawPath = "/user/{userId}/channels/updateChannel/{channelId}" #Patch, BODY
-deleteChannelRawPath = "/user/{userId}/channels/deleteChannel/{channelId}" #DELETE, BODY
 
-commentsAddRawPath = "/user/{userId}/videos/{videoId}/comments/addComment" #POST, BODY
-commentsUpdateRawPath = "/user/{userId}/videos/{videoId}/comments/updateComment/{commentId}" #POST, BODY
-commentsDeleteRawPath = "/user/{userId}/videos/{videoId}/comments/deleteComment/{commentId}" #POST, BODY
-commentsViewRawPath = "/videos/{videoId}/comments" #GET, BODY
-commentsCountRawPath = "/videos/{videoId}/comments/commentCount" #POST, BODY
-commentsLikeRawPath = "videos/{videoId}/comments/addCommentLike/{commentId}" #PATCH, BODY
-commentsDislikeRawPath = "videos/{videoId}/comments/addCommentDislike/{commentId}" #PATCH, BODY
+
+channelAddRawPath = "/channels/addChannel" #POST, BODY
+channelsViewRawPath = "/channels/viewChannel" #GET, BODY
+channelSearchRawPath = "/channels/searchChannel" #GET, BODY
+updateChannelRawPath = "/channels/updateChannel" #Patch, BODY
+deleteChannelRawPath = "/channels/deleteChannel" #DELETE, BODY
+
+
+commentsAddRawPath = "/comments/addComment" #POST, BODY
+commentsUpdateRawPath = "/comments/updateComment" #PATCH, BODY
+commentsDeleteRawPath = "/comments/deleteComment" #DELETE, BODY
+commentsViewRawPath = "/comments/viewComments" #GET, BODY
+commentsCountRawPath = "/comments/commentCount" #POST, BODY
+commentsLikeRawPath = "/comments/addCommentLike" #PATCH, BODY
+commentsDislikeRawPath = "/comments/addCommentDislike" #PATCH, BODY
+
+
+commentsReplyAddRawPath ="/replies/addReply" #POST,BODY
+commentsReplyUpdateRawPath ="/replies/updateReply" #PATCH,BODY
+commentsReplyDeleteRawPath ="/replies/deleteReply" #DELETE,BODY
+commentsReplyViewRawPath ="/replies/viewReply" #GET,BODY
+commentsReplyCountRawPath ="/replies/countReplies" #GET,BODY
+commentsReplyLikeRawPath ="/replies/addLikeReply" #PATCH,BODY
+commentsReplyDislikeRawPath ="/replies/addDislikeReply" #PATCH,BODY
 
 dbLogin={}
 
@@ -54,79 +67,114 @@ def lambda_handler(event, context):
         
     if event['rawPath'] == channelAddRawPath:
         print("Channel success")
-        userId = event['pathParameters']['userId']
-        
         decodedBody = json.loads(event['body'])
-        return channels.channelAdd(userId,decodedBody,connection)
+        return channels.channelAdd(decodedBody,connection)
         
     if event['rawPath'] == channelsViewRawPath:
         print("Channels view success")
-        userId = event['pathParameters']['userId']
+        userId = event['queryStringParameters']['user_id']
         return channels.viewChannels(userId,connection)
         
     if event['rawPath'] == channelSearchRawPath:
-        print("Channel view success")
-        userId = event['pathParameters']['userId']
-        searchItem = event['pathParameters']['searchItem']
-        return channels.searchChannel(userId,searchItem,connection)
+        searchItem = event['queryStringParameters']['searchItem']
+        return channels.searchChannel(searchItem,connection)
         
     if event['rawPath'] == updateChannelRawPath:
         print("Channel success")
-        userId = event['pathParameters']['userId']
-        channelId = event['pathParameters']['channelId']
+        #channelId = event['queryStringParameters']['channelId']
         decodedBody = json.loads(event['body'])
-        return channels.updateChannel(userId,channelId,decodedBody,connection)
+        return channels.updateChannel(decodedBody,connection)
         
     if event['rawPath'] == deleteChannelRawPath:
         print("Channel success")
-        userId = event['pathParameters']['userId']
-        channelId = event['pathParameters']['channelId']
+        userId = event['queryStringParameters']['userId']
+        channelId = event['queryStringParameters']['channelId']
         return channels.deleteChannel(userId,channelId,connection)
             
     
     if event['rawPath'] == commentsAddRawPath:
         print("Comment success")
-        userId = event['pathParameters']['userId']
-        videoId = event['pathParameters']['videoId']
+        # userId = event['queryStringParameters']['userId']
+        # videoId = event['queryStringParameters']['videoId']
         decodedBody = json.loads(event['body'])
-        return comments.commentAdd(userId,videoId,decodedBody,connection)
+        return comments.commentAdd(decodedBody,connection)
         
     if event['rawPath'] == commentsUpdateRawPath:
         print("Comment success")
-        userId = event['pathParameters']['userId']
-        videoId = event['pathParameters']['videoId']
-        commentId = event['pathParameters']['commentId']
+        # userId = event['queryStringParameters']['userId']
+        # videoId = event['queryStringParameters']['videoId']
+        #commentId = event['queryStringParameters']['commentId']
         decodedBody = json.loads(event['body'])
-        return comments.updateComment(userId,videoId,commentId,decodedBody,connection)
+        return comments.updateComment(decodedBody,connection)
         
     if event['rawPath'] == commentsDeleteRawPath:
         print("Comment success")
-        userId = event['pathParameters']['userId']
-        videoId = event['pathParameters']['videoId']
-        commentId = event['pathParameters']['commentId']
+        #userId = event['queryStringParameters']['userId']
+        #videoId = event['queryStringParameters']['videoId']
+        commentId = event['queryStringParameters']['commentId']
         return comments.deleteComment(commentId,connection)
         
     if event['rawPath'] == commentsViewRawPath:
         print("Comment success")
-        videoId = event['pathParameters']['videoId']
+        videoId = event['queryStringParameters']['videoId']
         return comments.viewComments(videoId,connection)
         
     if event['rawPath'] == commentsCountRawPath:
         print("Comment success")
-        videoId = event['pathParameters']['videoId']
+        videoId = event['queryStringParameters']['videoId']
         return comments.commentCount(videoId,connection)
         
     if event['rawPath'] == commentsLikeRawPath:
         print("Comment like success")
-        videoId = event['pathParameters']['videoId']
-        commentId = event['pathParameters']['commentId']
-        return comments.addCommentLike(videoId,commentId,connection)
+        # videoId = event['pathParameters']['videoId']
+        # commentId = event['pathParameters']['commentId']
+        decodedBody = json.loads(event['body'])
+        return comments.addCommentLike(decodedBody,connection)
         
     if event['rawPath'] == commentsDislikeRawPath:
         print("Comment dislike success")
-        videoId = event['pathParameters']['videoId']
-        commentId = event['pathParameters']['commentId']
-        return comments.addCommentDislike(videoId,commentId,connection)
+        decodedBody = json.loads(event['body'])
+        return comments.addCommentDislike(decodedBody,connection)
+        
+        
+    if event['rawPath'] == commentsReplyAddRawPath:
+        print("Comment Reply success")
+        decodedBody = json.loads(event['body'])
+        return commentreplies.commentReplyAdd(decodedBody,connection)
+        
+    if event['rawPath'] == commentsReplyUpdateRawPath:
+        print("Comment reply success")
+        decodedBody = json.loads(event['body'])
+        return commentreplies.updateCommentReply(decodedBody,connection)
+        
+    if event['rawPath'] == commentsReplyDeleteRawPath:
+        print("Comment reply success")
+        commentReplyId = event['queryStringParameters']['commentReplyId']
+        return commentreplies.deleteCommentReply(commentReplyId,connection)
+        
+    if event['rawPath'] == commentsReplyViewRawPath:
+        print("Comment reply success")
+        videoId = event['queryStringParameters']['videoId']
+        commentId = event['queryStringParameters']['commentId']
+        return commentreplies.viewCommentsReply(videoId,commentId,connection)
+        
+    if event['rawPath'] == commentsReplyCountRawPath:
+        print("Comment reply success")
+        videoId = event['queryStringParameters']['videoId']
+        commentId = event['queryStringParameters']['commentId']
+        return commentreplies.commentReplyCount(videoId,commentId,connection)
+        
+    if event['rawPath'] == commentsReplyLikeRawPath:
+        print("Comment reply like success")
+        # videoId = event['pathParameters']['videoId']
+        # commentId = event['pathParameters']['commentId']
+        decodedBody = json.loads(event['body'])
+        return commentreplies.addCommentReplyLike(decodedBody,connection)
+        
+    if event['rawPath'] == commentsReplyDislikeRawPath:
+        print("Comment reply dislike success")
+        decodedBody = json.loads(event['body'])
+        return commentreplies.addCommentReplyDislike(decodedBody,connection)
     
                                  
 
