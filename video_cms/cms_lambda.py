@@ -5,7 +5,7 @@ import test
 import followers
 import comments
 import videoMetadata
-
+import commentreplies
 
 #addsIngestRawPath = "/channel/video/addIngest" # POST , BODY
 
@@ -140,41 +140,41 @@ def lambda_handler(event, context):
     if event['rawPath'] == commentsReplyAddRawPath:
         print("Comment Reply success")
         decodedBody = json.loads(event['body'])
-        return commentreplies.commentReplyAdd(decodedBody,connection)
+        return commentreplies.commentreplyAdd(decodedBody,connection)
         
     if event['rawPath'] == commentsReplyUpdateRawPath:
         print("Comment reply success")
         decodedBody = json.loads(event['body'])
-        return commentreplies.updateCommentReply(decodedBody,connection)
+        return commentreplies.updatecommentReply(decodedBody,connection)
         
     if event['rawPath'] == commentsReplyDeleteRawPath:
         print("Comment reply success")
         commentReplyId = event['queryStringParameters']['commentReplyId']
-        return commentreplies.deleteCommentReply(commentReplyId,connection)
+        return commentreplies.deletecommentreply(commentReplyId,connection)
         
     if event['rawPath'] == commentsReplyViewRawPath:
         print("Comment reply success")
-        videoId = event['queryStringParameters']['videoId']
+        #userId = event['queryStringParameters']['userId']
         commentId = event['queryStringParameters']['commentId']
-        return commentreplies.viewCommentsReply(videoId,commentId,connection)
+        return commentreplies.viewcommentreplies(commentId,connection)
         
     if event['rawPath'] == commentsReplyCountRawPath:
         print("Comment reply success")
         videoId = event['queryStringParameters']['videoId']
         commentId = event['queryStringParameters']['commentId']
-        return commentreplies.commentReplyCount(videoId,commentId,connection)
+        return commentreplies.commentreplyCount(videoId,commentId,connection)
         
     if event['rawPath'] == commentsReplyLikeRawPath:
         print("Comment reply like success")
         # videoId = event['pathParameters']['videoId']
         # commentId = event['pathParameters']['commentId']
         decodedBody = json.loads(event['body'])
-        return commentreplies.addCommentReplyLike(decodedBody,connection)
+        return commentreplies.addcommentreplyLike(decodedBody,connection)
         
     if event['rawPath'] == commentsReplyDislikeRawPath:
         print("Comment reply dislike success")
         decodedBody = json.loads(event['body'])
-        return commentreplies.addCommentReplyDislike(decodedBody,connection)
+        return commentreplies.addcommentreplyDislike(decodedBody,connection)
     
                                  
 
