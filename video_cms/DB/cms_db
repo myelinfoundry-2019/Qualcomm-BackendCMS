@@ -1,0 +1,396 @@
+
+drop database if exists db1;
+create database db1;
+
+use db1;
+  DROP TABLE IF EXISTS `users`;
+  CREATE TABLE `users`(
+    `id` BIGINT(20) AUTO_INCREMENT,
+    `first_name` VARCHAR(32) DEFAULT NULL,
+    `last_name` VARCHAR(32) DEFAULT NULL,
+    `DOB` DATE DEFAULT NULL,
+    `alias` VARCHAR(32) DEFAULT NULL,
+    `emailid` VARCHAR(32) DEFAULT NULL,
+    `state` VARCHAR(32) DEFAULT NULL,
+    `city` VARCHAR(32) DEFAULT NULL,
+    `pincode` VARCHAR(32) DEFAULT NULL,
+    `country_code` int DEFAULT NULL,
+    `phone_number` VARCHAR(10) DEFAULT NULL,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `usertype` binary(1) DEFAULT NULL,
+    `profile_pic_link` VARCHAR(255) DEFAULT NULL,
+    `background_pic_link` VARCHAR(255) DEFAULT NULL,
+    `password` VARCHAR (255) DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `user` (`id`, `created_at`)
+  ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8;
+
+
+  DROP TABLE IF EXISTS `user_activity`;
+  CREATE TABLE `user_activity`(
+    `id` BIGINT(20) AUTO_INCREMENT,
+    `user_id` BIGINT(20) DEFAULT NULL,
+    `activity` VARCHAR(255) DEFAULT NULL,
+    `activity_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `user_activity` (`id`,`activity_time`)
+    #FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+  ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8;
+
+
+  DROP TABLE IF EXISTS `user_notification`;
+  CREATE TABLE`user_notification`(
+    `id` BIGINT(20) AUTO_INCREMENT,
+    `user_id` BIGINT(20) DEFAULT NULL,
+    `notification_type` VARCHAR(10) DEFAULT NULL,
+    `notification_status` VARCHAR(10) DEFAULT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `status_changed_at` TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `user_notification` (`id`,`created_at`),
+    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+  ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8;
+
+
+  DROP TABLE IF EXISTS `game_info`;
+  CREATE TABLE`game_info`(
+    `id` BIGINT(20) AUTO_INCREMENT,
+    `title` VARCHAR(32) NOT NULL,
+    `game_logo_link` VARCHAR(255) DEFAULT NULL,
+    `team_size_1` BIGINT(20) DEFAULT NULL,
+    `team_size_2` BIGINT(20) DEFAULT NULL,
+    `team_size_3` BIGINT(20) DEFAULT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `game_info` (`id`,`created_at`),
+    UNIQUE KEY `game_info_title` (`title`)
+    #UNIQUE KEY `game_info_team_size_1` (`team_size_1`)
+  ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8;
+
+
+  DROP TABLE IF EXISTS `game_id`;
+  CREATE TABLE`game_id`(
+    `id` BIGINT(20) AUTO_INCREMENT,
+    `game_info_id` BIGINT DEFAULT NULL,
+    `usergame_id` VARCHAR(255) NOT NULL,
+    `user_id` BIGINT DEFAULT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` datetime ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `game_id` (`id`,`created_at`),
+    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`game_info_id`) REFERENCES `game_info` (`id`) ON DELETE CASCADE
+  ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8;
+
+
+  DROP TABLE IF EXISTS `team`;
+  CREATE TABLE`team`(
+    `id` BIGINT(20) AUTO_INCREMENT,
+    `captain` BIGINT(20) NOT NULL,
+    `team_name` VARCHAR(255) NOT NULL,
+    `team_pic_link` VARCHAR(255) DEFAULT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `team` (`id`,`created_at`),
+    FOREIGN KEY (`captain`) REFERENCES `users` (`id`) ON DELETE CASCADE
+  ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8;
+
+
+  DROP TABLE IF EXISTS `team_members`;
+  CREATE TABLE `team_members`(
+    `id` BIGINT(20) AUTO_INCREMENT,
+    `team_id` BIGINT(20),
+    `member_id` BIGINT(20),
+    `status` VARCHAR(20),
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `team_members` (`id`,`created_at`),
+    FOREIGN KEY (`member_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`team_id`) REFERENCES `team` (`id`) ON DELETE CASCADE
+  ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8;
+
+
+  DROP TABLE IF EXISTS `tournament_info`;
+  CREATE TABLE `tournament_info`(
+    `id` BIGINT(20) AUTO_INCREMENT,
+    `tournament_logo_link` VARCHAR(255),
+    `start_date` DATE DEFAULT NULL,
+    `end_date` DATE DEFAULT NULL,
+    `tournament_name` VARCHAR(32) DEFAULT NULL,
+    `result_col` VARCHAR(32) DEFAULT NULL,
+    `game_title` VARCHAR(32) DEFAULT NULL,
+    `game_team_size` BIGINT(20) ,
+    `prize_money` BIGINT(20) DEFAULT NULL,
+    `eligibility` VARCHAR(32) DEFAULT NULL,
+    `faq` TEXT DEFAULT NULL,
+    `terms_and_conditions` TEXT DEFAULT NULL,
+    `description` TEXT DEFAULT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `tournament_info` (`id`,`created_at`),
+    FOREIGN KEY (`game_title`) REFERENCES `game_info` (`title`) ON DELETE CASCADE
+    #FOREIGN KEY (`game_team_size`) REFERENCES `game_info` (`team_size_1`) ON DELETE CASCADE
+  ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8;
+
+
+  DROP TABLE IF EXISTS `registered_team`;
+  CREATE TABLE `registered_team`(
+    `id` BIGINT(20) AUTO_INCREMENT,
+    `team_id` BIGINT(20) DEFAULT NULL,
+    `tournament_info_id` BIGINT(20) DEFAULT NULL,
+    `captain` BIGINT(20) NOT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `registered_team` (`id`,`created_at`),
+    FOREIGN KEY (`team_id`) REFERENCES `team` (`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`captain`) REFERENCES `team` (`captain`)  ON UPDATE CASCADE,
+    FOREIGN KEY (`tournament_info_id`) REFERENCES `tournament_info` (`id`) ON DELETE CASCADE
+  ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8;
+
+
+  DROP TABLE IF EXISTS `registered_team_members`;
+  CREATE TABLE `registered_team_members`(
+    `id` BIGINT(20) AUTO_INCREMENT,
+    `team_id` BIGINT(20),
+    `tournament_info_id` BIGINT(20),
+    `member_id` BIGINT(20),
+    `status` VARCHAR(10) DEFAULT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `registered_team_members` (`id`,`created_at`),
+    FOREIGN KEY (`Team_id`) REFERENCES `registered_team` (`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`member_id`) REFERENCES `team_members` (`member_id`) ON DELETE CASCADE
+  ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8;
+
+
+  DROP TABLE IF EXISTS `round_info`;
+  CREATE TABLE `round_info`(
+    `id` BIGINT(20) AUTO_INCREMENT,
+    `tes_round_id` VARCHAR(255) ,
+    `tournament_info_id` BIGINT(20) DEFAULT NULL,
+    `start_date` DATETIME DEFAULT NULL,
+    `end_date` DATETIME DEFAULT NULL,
+    `round_name` VARCHAR(255) DEFAULT NULL,
+    `short_name` VARCHAR(255) DEFAULT NULL,
+    `group_size` BIGINT(20) DEFAULT NULL,
+    `round_info_col` VARCHAR(45) DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    FOREIGN KEY (`tournament_info_id`) REFERENCES `tournament_info` (`id`)
+  ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8;
+
+
+  DROP TABLE IF EXISTS `group_info`;
+  CREATE TABLE `group_info`(
+    `id` BIGINT(20) AUTO_INCREMENT,
+    `group_no` BIGINT(20) NOT NULL,
+    `registered_team_id` BIGINT DEFAULT NULL,
+    `roundinfo_id` BIGINT DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    FOREIGN KEY (`registered_team_id`) REFERENCES `registered_team` (`id`),
+    FOREIGN KEY (`roundinfo_id`) REFERENCES `round_info` (`id`)
+  ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8;
+
+
+  DROP TABLE IF EXISTS `match_info`;
+  CREATE TABLE `match_info`(
+    `id` BIGINT(20) AUTO_INCREMENT,
+    `group_no` BIGINT(20) DEFAULT NULL,
+    `lobby_id` VARCHAR(25) DEFAULT NULL,
+    `lobby_pwd` VARCHAR(25) DEFAULT NULL,
+    `start_time` DATETIME DEFAULT NULL,
+    PRIMARY KEY (`id`),
+  FOREIGN KEY (`group_no`) REFERENCES `group_info` (`id`)
+  ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8;
+
+
+  DROP TABLE IF EXISTS `match_results`;
+  CREATE TABLE `match_results`(
+    `id` BIGINT(20) AUTO_INCREMENT,
+    `match_info_id` BIGINT(20) DEFAULT NULL,
+    `registered_team_id` BIGINT(20) DEFAULT NULL,
+    `score` BIGINT(20) DEFAULT NULL,
+    `kills` BIGINT(20) DEFAULT NULL,
+    `position` BIGINT(20) DEFAULT NULL,
+    `qualification_status` VARCHAR(25) DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    FOREIGN KEY (`match_info_id`) REFERENCES `match_info` (`id`),
+    FOREIGN KEY (`registered_team_id`) REFERENCES `registered_team` (`id`)
+  )ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8;
+
+  DROP TABLE IF EXISTS `Channel`;
+  CREATE TABLE `Channel`(
+  `idChannel` INT NOT NULL,
+  `Channel_name` VARCHAR(255) NOT NULL,
+  `Channel_Description` VARCHAR(255) NULL,
+  `created_at` TIMESTAMP NULL,
+  `category` VARCHAR(45) NULL,
+  `Channel_profile_pic` VARCHAR(255) NULL,
+  `Channel_users_id` BIGINT NOT NULL,
+  PRIMARY KEY (`idChannel`),
+  FOREIGN KEY (`Channel_users_id`) REFERENCES `users` (`id`)
+)ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8;
+
+  DROP TABLE IF EXISTS `videos`;
+  CREATE TABLE `videos`(
+    `id` BIGINT(20) AUTO_INCREMENT,
+    `video_name` VARCHAR(255) DEFAULT NULL,
+    `game_info_id` BIGINT(20),
+    `tournament_info_id` BIGINT(20),
+    `videolink` VARCHAR(255) DEFAULT NULL,
+    `thumbnail_url` VARCHAR(255) DEFAULT NULL,
+    `type` VARCHAR(10)DEFAULT NULL,
+    `round_info_id` BIGINT(20),
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `videos` (`id`, `created_at`),
+    FOREIGN KEY (`game_info_id`) REFERENCES `game_info` (`id`),
+    FOREIGN KEY (`tournament_info_id`) REFERENCES `tournament_info` (`id`),
+    FOREIGN KEY (`round_info_id`) REFERENCES `round_info` (`id`)
+  ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8;
+
+
+  DROP TABLE IF EXISTS `round_results`;
+  CREATE TABLE `round_results`(
+    `id` BIGINT(20) AUTO_INCREMENT,
+    `round_info_id` BIGINT(20) DEFAULT NULL,
+    `registered_team_id` BIGINT(20) DEFAULT NULL,
+    `score` BIGINT(20) DEFAULT NULL,
+    `kills` BIGINT(20) DEFAULT NULL,
+    `position` BIGINT(20) DEFAULT NULL,
+    `qualification_status` VARCHAR(25) DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    FOREIGN KEY (`round_info_id`) REFERENCES `round_info` (`id`),
+    FOREIGN KEY (`registered_team_id`) REFERENCES `registered_team` (`id`)
+  )ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8;
+
+ DROP TABLE IF EXISTS `final_results`;
+  CREATE TABLE `final_results`(
+    `id` BIGINT(20) AUTO_INCREMENT,
+    `tournament_info_id` BIGINT(20) DEFAULT NULL,
+    `team_name` VARCHAR(25) DEFAULT NULL,
+    `position` BIGINT(20) DEFAULT NULL,
+    `winnings` VARCHAR(25) DEFAULT NULL,
+    `team_pic_link` VARCHAR(25) DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    FOREIGN KEY (`tournament_info_id`) REFERENCES `tournament_info` (`id`)
+  )ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8;
+
+DROP TABLE IF EXISTS `device_id`;
+  CREATE TABLE `device_id`(
+    `device_token` VARCHAR(1000),
+    `member_id` BIGINT(20) DEFAULT NULL,
+    PRIMARY KEY (`device_token`),
+    FOREIGN KEY (`member_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+  )ENGINE = InnoDB DEFAULT CHARSET = utf8;
+
+DROP TABLE IF EXISTS `Video_Metadata`;
+  CREATE TABLE `Video_Metadata`(
+  `idMetadata_info` INT NOT NULL,
+  `Metadata_title` VARCHAR(255) NOT NULL,
+  `video_type` VARCHAR(45) NULL,
+  `video_descriptions` VARCHAR(255) NOT NULL,
+  `videouploader_user` BIGINT NOT NULL,
+  `videos_id` BIGINT NOT NULL,
+  `Stream_description` VARCHAR(255) NULL,
+  `video_tags` VARCHAR(255) NOT NULL,
+  `Report` VARCHAR(45) NULL,
+  `Views` INT NULL,
+  `round_info_id` BIGINT NOT NULL,
+  `game_info_id1` BIGINT NOT NULL,
+  `tournament_info_id` BIGINT NOT NULL,
+  PRIMARY KEY (`idMetadata_info`),
+  FOREIGN KEY (`videouploader_user`) REFERENCES `users` (`id`)
+  FOREIGN KEY (`videos_id`) REFERENCES `videos` (`id`)
+  FOREIGN KEY (`round_info_id`) REFERENCES `round_info` (`id`)
+  FOREIGN KEY (`game_info_id1`) REFERENCES `game_info` (`id`)
+  FOREIGN KEY (`tournament_info_id`) REFERENCES `tournament_info` (`id`)
+ )ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8;
+
+
+DROP TABLE IF EXISTS `Comments`;
+  CREATE TABLE `Comments`(
+  `Comments_id` INT NOT NULL,
+  `Comments` VARCHAR(255) NOT NULL,
+  `created_at` TIMESTAMP NOT NULL,
+  `likes` VARCHAR(45) NULL,
+  `dislikes` VARCHAR(45) NULL,
+  `users_id` BIGINT NOT NULL,
+  `videos_id` BIGINT NOT NULL,
+  PRIMARY KEY (`Comments_id`),
+    FOREIGN KEY (`users_id`) REFERENCES `users` (`id`)
+    FOREIGN KEY (`videos_id`) REFERENCES `videos` (`id`)
+   )ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8;
+
+
+DROP TABLE IF EXISTS `Advertisement`;
+  CREATE TABLE `Advertisement`(
+  `Ad_id` INT NOT NULL,
+  `Advertisement_link` VARCHAR(255) NOT NULL,
+  `Advertisement_duration` TIME NOT NULL,
+  `Advertisement_created_at` VARCHAR(255) NOT NULL,
+  PRIMARY KEY (`Ad_id`))
+ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8;
+
+
+DROP TABLE IF EXISTS `Admin_dashboard`;
+  CREATE TABLE `Admin_dashboard`(
+  `idAdmin_dashboard` INT NOT NULL,
+  `Admin_name` VARCHAR(45) NULL,
+  `Admin_password` VARCHAR(45) NULL,
+  PRIMARY KEY (`idAdmin_dashboard`))
+ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8;
+
+
+DROP TABLE IF EXISTS `followers`;
+  CREATE TABLE `followers`(
+  `idSubscribers` INT NOT NULL,
+  `Follow` VARCHAR(45) NULL,
+  `views` VARCHAR(45) NULL,
+  `Channel_idChannel` INT NOT NULL,
+  `users_id` BIGINT NOT NULL,
+  PRIMARY KEY (`idSubscribers`),
+  FOREIGN KEY (`Channel_idChannel`) REFERENCES `Channel` (`idChannel`) 
+  FOREIGN KEY (`users_id`) REFERENCES `users` (`id`)
+  )
+ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8;
+
+DROP TABLE IF EXISTS `Comment_replies`;
+  CREATE TABLE `Comment_replies`(
+  `id` INT NOT NULL,
+  `Replies` VARCHAR(255) NOT NULL,
+  `created_at` TIMESTAMP NOT NULL,
+  `likes` VARCHAR(45) NULL,
+  `dislikes` VARCHAR(45) NULL,
+  `users_id` BIGINT NOT NULL,
+  `Comments_Comments_id` INT NOT NULL,
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`users_id`) REFERENCES `users` (`id`)
+  FOREIGN KEY (`Comments_Comments_id`) REFERENCES `Comments` (`Comments_id`)
+   )
+ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
