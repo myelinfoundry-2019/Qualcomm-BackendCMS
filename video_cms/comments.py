@@ -1,30 +1,30 @@
 import utils
 
-def commentAdd(userId,videoId,decodedBody,connection):
+def commentAdd(decodedBody,connection):
     print("Received CommentAdd request")
     
     cursor = connection.cursor()  # get the cursor object
     
+    userId=decodedBody['userId']
+    videoId=decodedBody['videoId']
     comment=decodedBody['comment']
-    #likes=decodedBody['likes']
-    #dislikes=decodedBody['dislikes']
     result=[]
     fields=['id','comment','likes','dislikes','created_at','user_id','video_id']
     sql="""SELECT EXISTS(SELECT * FROM videos where id=%s)"""
     cursor.execute(sql,(videoId,))
     extracted_data=cursor.fetchone()
     if extracted_data[0]!=0:
-        sql="""SELECT * FROM comments where comment=%s"""
+        sql="""SELECT * FROM comment where comment=%s"""
         cursor.execute(sql,(comment,))
         extracted_data_c=cursor.fetchall()
         print(extracted_data_c,len(extracted_data_c))
     
         if(len(extracted_data_c)==0):
-            sql="""INSERT INTO comments(comment,user_id,video_id) VALUES(%s,%s,%s) """
+            sql="""INSERT INTO comment(comment,user_id,video_id) VALUES(%s,%s,%s) """
             val = (comment,userId,videoId)
             cursor.execute(sql,val)
             connection.commit()
-            sql="""Select id,comment,likes,dislikes,created_at,user_id,video_id from comments where comment=%s"""
+            sql="""Select id,comment,likes,dislikes,created_at,user_id,video_id from comment where comment=%s"""
             cursor.execute(sql,(comment,))
             extracted_data_ch=cursor.fetchall()
             for row in extracted_data_ch:
@@ -36,7 +36,7 @@ def commentAdd(userId,videoId,decodedBody,connection):
         
         else:
             
-            sql="""Select id,comment,likes,dislikes,created_at,user_id,video_id from comments where comment=%s"""
+            sql="""Select id,comment,likes,dislikes,created_at,user_id,video_id from comment where comment=%s"""
             cursor.execute(sql,(comment,))
             extracted_data_ch=cursor.fetchall()
             for row in extracted_data_ch:
@@ -51,24 +51,27 @@ def commentAdd(userId,videoId,decodedBody,connection):
     #return http response
     return utils.response("Passed",response_data)
 
-def updateComment(userId,commentId,videoId,decodedBody,connection):
+def updateComment(decodedBody,connection):
     cursor=connection.cursor()
     
     comment=decodedBody['comment']
+    userId=decodedBody['userId']
+    videoId=decodedBody['videoId']
+    commentId=decodedBody['commentId']
     result=[]
-    fields=['id','comments','likes','dislikes','created_at','user_id','video_id']
+    fields=['id','comment','likes','dislikes','created_at','user_id','video_id']
     
-    sql="""SELECT EXISTS(SELECT * FROM comments where id=%s)"""
+    sql="""SELECT EXISTS(SELECT * FROM comment where id=%s)"""
     cursor.execute(sql,(commentId,))
     extracted_data=cursor.fetchone()
     
     if extracted_data[0]!=0:
-        sql="""UPDATE comments SET comment=%s where id=%s"""
+        sql="""UPDATE comment SET comment=%s where id=%s"""
         val = (comment,commentId)
         cursor.execute(sql,val)
         connection.commit()
         
-        sql="""Select id,comment,likes,dislikes,created_at,user_id,video_id from comments where comment=%s"""
+        sql="""Select id,comment,likes,dislikes,created_at,user_id,video_id from comment where comment=%s"""
         cursor.execute(sql,(comment,))
         extracted_data_ch=cursor.fetchall()
         for row in extracted_data_ch:
@@ -86,12 +89,12 @@ def updateComment(userId,commentId,videoId,decodedBody,connection):
 def deleteComment(commentId,connection):
     cursor=connection.cursor()
     
-    sql="""SELECT EXISTS(SELECT * FROM comments where id=%s)"""
+    sql="""SELECT EXISTS(SELECT * FROM comment where id=%s)"""
     cursor.execute(sql,(commentId,))
     extracted_data=cursor.fetchone()
     
     if extracted_data[0]!=0:
-        sql="""DELETE from comments where id=%s"""
+        sql="""DELETE from comment where id=%s"""
         cursor.execute(sql,(commentId,))
         print("comment deleted")
         connection.commit()
@@ -110,7 +113,7 @@ def commentCount(videoId,connection):
     fields=['id','comment','likes','dislikes']
     extracted_data=cursor.fetchone()
     if(extracted_data[0]!=0):
-        sql="""select count(comment),comment,likes,dislikes from comments where video_id=%s"""
+        sql="""select count(comment),comment,likes,dislikes from comment where video_id=%s"""
         cursor.execute(sql,(videoId,))
         
         extract_commnet_count=cursor.fetchall()
@@ -130,94 +133,108 @@ def commentCount(videoId,connection):
     return utils.response("Passed",response_data)
 
 
-def addCommentLike(videoId,commentId,connection):
+def addCommentLike(decodedBody,connection):
+    print("add comment request")
     cursor=connection.cursor()
-    print('hello1')
-    fields=['user_id','comments','replies','likes','dislikes']
+    
+    commentId=decodedBody['commentId']
+    userId=decodedBody['userId']
+    videoId=decodedBody['videoId']
+    fields=['comment','likes']
     result=[]
-    sql="""SELECT EXISTS(SELECT * FROM comments where id=%s)"""
+    
+    sql="""SELECT EXISTS(SELECT * FROM comment where id=%s)"""
     cursor.execute(sql,(commentId,))
     extracted_data=cursor.fetchone()
-    print('hello1')
-    sql="""select likes from comments where id=%s"""
-    cursor.execute(sql,(commentId))
+    
+    sql="""select likes from comment where id=%s"""
+    cursor.execute(sql,(commentId,))
     extract_likes=cursor.fetchone()
-    # print("hi",len(extract_likes),extract_likes[0])
+    
+    print("hi",len(extract_likes),extract_likes[0])
     likes=extract_likes[0]
-    print('hello1')
-    if(likes==None):
-        likes="0"
-        if extracted_data[0]!=0:
-            sql="""UPDATE comments SET likes=%s  WHERE id=%s"""
-            val = ((int(likes)+1),commentId)
-            cursor.execute(sql,val)
-            connection.commit()
-            print('hello1')
-            cursor.execute("""Select likes from comments""")
-            extracted_data_ch=cursor.fetchall()
-            for row in extracted_data_ch:
-                response_da=dict(zip(fields,row))
-                result.append(response_da)
-                print('hello1')
-            response_data={'message':'comment likes','data':result}
-        else:
-            print('hello else')
-            cursor.close()
-            response_data={'message':'comment not found','data':[]}
+    
+    
+    if extracted_data[0]!=0:
+        sql="""UPDATE comment SET likes=%s  WHERE id=%s"""
+        val = ((int(likes)+1),commentId)
+        cursor.execute(sql,val)
+        connection.commit()
+        
+        sql="""Select comment,likes from comment where id=%s"""
+        cursor.execute(sql,(commentId,))
+        extracted_data_ch=cursor.fetchall()
+        for row in extracted_data_ch:
+            response_data_body=dict(zip(fields,row))
+            result.append(response_data_body)
+            
+        response_data={'message':'comment likes','data':result}
+    else:
+        print('hello else')
+        cursor.close()
+        response_data={'message':'comment not found','data':[]}
     return utils.response("Passed",response_data)
  
-def addCommentDislike(videoId,commentId,connection):
+def addCommentDislike(decodedBody,connection):
+    print("add comment request")
     cursor=connection.cursor()
     
-    fields=['id','comments','likes','dislikes']
+    commentId=decodedBody['commentId']
+    userId=decodedBody['userId']
+    videoId=decodedBody['videoId']
+    fields=['comment','likes']
     result=[]
-    sql="""SELECT EXISTS(SELECT * FROM comments where id=%s)"""
+    
+    sql="""SELECT EXISTS(SELECT * FROM comment where id=%s)"""
     cursor.execute(sql,(commentId,))
     extracted_data=cursor.fetchone()
     
-    sql="""select dislikes from comments where id=%s"""
-    cursor.execute(sql,(commentId))
-    extract_dislikes=cursor.fetchone()
+    sql="""select dislikes from comment where id=%s"""
+    cursor.execute(sql,(commentId,))
+    extract_likes=cursor.fetchone()
     
-    dislikes=extract_dislikes[0]
+    print("hi",len(extract_likes),extract_likes[0])
+    likes=extract_likes[0]
     
-    if(dislikes==None):
-        dislikes="0"
-        if extracted_data[0]!=0:
-            sql="""UPDATE comments SET likes=%s  WHERE id=%s"""
-            val = ((int(dislikes)+1),commentId)
-            cursor.execute(sql,val)
-            connection.commit()
+    
+    if extracted_data[0]!=0:
+        sql="""UPDATE comment SET dislikes=%s  WHERE id=%s"""
+        val = ((int(likes)+1),commentId)
+        cursor.execute(sql,val)
+        connection.commit()
+        
+        sql="""Select comment,dislikes from comment where id=%s"""
+        cursor.execute(sql,(commentId,))
+        extracted_data_ch=cursor.fetchall()
+        for row in extracted_data_ch:
+            response_data_body=dict(zip(fields,row))
+            result.append(response_data_body)
             
-            cursor.execute("""Select dislikes from comments""")
-            extracted_data_ch=cursor.fetchall()
-            for row in extracted_data_ch:
-                response_da=dict(zip(fields,row))
-                result.append(response_da)
-            response_data={'message':'comment dislikes','data':result}
+        response_data={'message':'comment dislikes','data':result}
     else:
+        print('hello else')
         cursor.close()
-        response_data={'message':'comment not exist','data':[]}
+        response_data={'message':'comment not found','data':[]}
     return utils.response("Passed",response_data)
 
 def viewComments(videoId,connection):
     cursor=connection.cursor()
     result=[]
-    fields=['user_id','comments','likes','dislikes']
+    fields=['user_id','comment','likes','dislikes']
     
-    sql="""SELECT EXISTS(SELECT * FROM comments where video_id=%s)"""
+    sql="""SELECT EXISTS(SELECT * FROM comment where video_id=%s)"""
     cursor.execute(sql,(videoId,))
     extracted_data=cursor.fetchone()
     
     if extracted_data[0]!=0:
-        sql="""SELECT comment,likes,dislikes from comments where video_id=%s"""
+        sql="""SELECT comment,likes,dislikes from comment where video_id=%s"""
         cursor.execute(sql,(videoId,))
         extracted_data_ex=cursor.fetchall()
         
         for row in extracted_data_ex:
           response_data=dict(zip(fields,row))
           result.append(response_data)
-        response_data={'message':'COMMENTS','data':result}
+        response_data={'message':'COMMENT','data':result}
         print(response_data)
     else:
         cursor.close()
