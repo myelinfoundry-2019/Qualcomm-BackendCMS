@@ -67,14 +67,14 @@ def viewChannels(userId,connection):
   print("view channel request")
   cursor = connection.cursor()
   result=[]
-  fields=['id','channel_name','channel_description','channel_profile_pic','channel_user_id','created_at','category']
+  fields=['id','channel_name','channel_description','channel_profile_pic','created_at','channel_user_id','category']
   
   sql="""SELECT EXISTS(SELECT * FROM channel where channel_user_id=%s)"""
   cursor.execute(sql,(userId,))
   extracted_data=cursor.fetchone()
   
   if extracted_data[0]!=0:
-    sql="""SELECT * from channel where channel_user_id=%s"""
+    sql="""SELECT id,channel_name,channel_description,channel_profile_pic,created_at,channel_user_id,category from channel where channel_user_id=%s"""
     cursor.execute(sql,(userId,))
     extracted_data_ex=cursor.fetchall()
 
@@ -91,12 +91,34 @@ def viewChannels(userId,connection):
   #response_data={'message':'user not exist','data':[]}
   return utils.response("Passed",response_data)
   
+def viewtop10Channels(connection):
+  print("view top 10 channel request")
+  cursor = connection.cursor()
+  result=[]
+  fields=['id','channel_name','channel_description','channel_profile_pic','created_at','channel_user_id','category']
   
+  # sql="""SELECT EXISTS(SELECT * FROM channel where channel_user_id=%s)"""
+  # cursor.execute(sql,(userId,))
+  # extracted_data=cursor.fetchone()
+  
+  # if extracted_data[0]!=0:
+  sql="""SELECT id,channel_name,channel_description,channel_profile_pic,created_at,channel_user_id,category from channel limit 10"""
+  cursor.execute(sql)
+  extracted_data_ex=cursor.fetchall()
+
+  for row in extracted_data_ex:
+    response_data=dict(zip(fields,row))
+    result.append(response_data)
+    response_data={'message':'channel','data':result}
+    #print(response_data)
+
+  return utils.response("Passed",response_data)
+
 def searchChannel(searchItem,connection):
   print("received search item request")
   cursor=connection.cursor()
   result=[]
-  fields=['id','channel_name','channel_description','channel_profile_pic','channel_user_id','created_at','category']
+  fields=['id','channel_name','channel_description','channel_profile_pic','created_at','channel_user_id','category']
   
   sql="""SELECT EXISTS(SELECT * FROM channel)"""
   cursor.execute(sql)
@@ -148,7 +170,7 @@ def updateChannel(decodedBody,connection):
     cursor.execute(sql,val)
     connection.commit()
     
-    sql="""Select id,channel_name,channel_description,channel_profile_pic,channel_user_id,created_at,category from channel where channel_name=%s"""
+    sql="""Select id,channel_name,channel_description,channel_profile_pic,created_at,channel_user_id,category from channel where channel_name=%s"""
     cursor.execute(sql,(channel_name,))
     extracted_data_ch=cursor.fetchall()
     for row in extracted_data_ch:
@@ -187,3 +209,4 @@ def deleteChannel(userId,channelId,connection):
     response_data={'message':'channel not exist for user','data':[]}
     #print("result->",response_data)
   return utils.response("Passed",response_data)
+

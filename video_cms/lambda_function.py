@@ -6,7 +6,7 @@ import followers
 import comments
 import videoMetadata
 import commentreplies
-
+import videos
 #addsIngestRawPath = "/channel/video/addIngest" # POST , BODY
 
 #categoryAddRawPath = "/user/category/addCategory" # POST, BODY
@@ -22,7 +22,15 @@ channelsViewRawPath = "/channels/viewChannel" #GET, BODY
 channelSearchRawPath = "/channels/searchChannel" #GET, BODY
 updateChannelRawPath = "/channels/updateChannel" #Patch, BODY
 deleteChannelRawPath = "/channels/deleteChannel" #DELETE, BODY
+top10ChannelRawPath = "/channels/top10Channel" #GET, BODY
 
+addFollowRawPath = "/channels/follow/addFollow" #POST, BODY
+getChannelViewsRawPath ="/channels/follow/getViews" #GET, BODY
+
+
+getVideoListRawPath ="/channels/videosList" #GET, BODY
+deleteVideoRawPath ="/channels/deleteVideo" #DELETE, BODY
+top10VideoRawPath = "/channels/top10Video" #GET, BODY
 
 commentsAddRawPath = "/comments/addComment" #POST, BODY
 commentsUpdateRawPath = "/comments/updateComment" #PATCH, BODY
@@ -31,6 +39,9 @@ commentsViewRawPath = "/comments/viewComments" #GET, BODY
 commentsCountRawPath = "/comments/commentCount" #POST, BODY
 commentsLikeRawPath = "/comments/addCommentLike" #PATCH, BODY
 commentsDislikeRawPath = "/comments/addCommentDislike" #PATCH, BODY
+topCommentsRawPath="/comments/topComments" #GET, BODY
+newCommentsRawPath="/comments/newComments" #GET, BODY
+viewCommentsUserRawPath="/comments/viewCommentsUser" #GET, BODY
 
 
 commentsReplyAddRawPath ="/replies/addReply" #POST,BODY
@@ -91,6 +102,40 @@ def lambda_handler(event, context):
         channelId = event['queryStringParameters']['channelId']
         return channels.deleteChannel(userId,channelId,connection)
             
+    if event['rawPath'] == top10ChannelRawPath:
+        print("top 10 Channels view success")
+        #userId = event['queryStringParameters']['user_id']
+        return channels.viewtop10Channels(connection)        
+            
+    if event['rawPath'] == addFollowRawPath:
+        print("Follow channel success")
+        #userId = event['queryStringParameters']['user_id']
+        #channelId = event['queryStringParameters']['channelId']
+        decodedBody = json.loads(event['body'])
+        return followers.followChannel(decodedBody,connection)        
+           
+    if event['rawPath'] == getChannelViewsRawPath:
+        print("get Channels view success")
+        channelId = event['queryStringParameters']['channel_id']
+        return followers.getChannelViews(channelId,connection)           
+            
+    if event['rawPath'] == getVideoListRawPath:
+        print("Channels view success")
+        channelId = event['queryStringParameters']['channel_id']
+        return videos.videoList(channelId,connection)        
+            
+    
+        
+    if event['rawPath'] == deleteVideoRawPath:
+        print("Channels view success")
+        channelId = event['queryStringParameters']['channel_id']
+        videoId = event['queryStringParameters']['video_id']
+        return videos.deleteVideo(channelId,videoId,connection) 
+    
+    if event['rawPath'] == getVideoListRawPath:
+        print("Channels view success")
+        #channelId = event['queryStringParameters']['channel_id']
+        return videos.videoList(connection) 
     
     if event['rawPath'] == commentsAddRawPath:
         print("Comment success")
@@ -177,10 +222,21 @@ def lambda_handler(event, context):
         return commentreplies.addcommentreplyDislike(decodedBody,connection)
     
                                  
-
+    if event['rawPath'] == topCommentsRawPath:
+        print("Comment top success")
+        videoId = event['queryStringParameters']['videoId']
+        return comments.topComments(videoId,connection)
+        
+    if event['rawPath'] == newCommentsRawPath:
+        print("Comment new success")
+        videoId = event['queryStringParameters']['videoId']
+        return comments.newComments(videoId,connection)
         
         
-
+    if event['rawPath'] == viewCommentsUserRawPath:
+        print("Comment user success")
+        videoId = event['queryStringParameters']['videoId']
+        return comments.viewCommentsUser(videoId,connection)
         
     
     

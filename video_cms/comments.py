@@ -244,8 +244,80 @@ def viewComments(videoId,connection):
 
 
 
+def topComments(videoId,connection):
+    cursor=connection.cursor()
+    result=[]
+    fields=['user_id','comment','likes','dislikes']
+    
+    sql="""SELECT EXISTS(SELECT * FROM comment where video_id=%s)"""
+    cursor.execute(sql,(videoId,))
+    extracted_data=cursor.fetchone()
+    
+    if extracted_data[0]!=0:
+        sql="""SELECT user_id,comment,likes,dislikes from comment where video_id=%s order by likes desc LIMIT 2"""
+        cursor.execute(sql,(videoId,))
+        extracted_data_ex=cursor.fetchall()
+        
+        for row in extracted_data_ex:
+          response_data=dict(zip(fields,row))
+          result.append(response_data)
+        response_data={'message':'COMMENT','data':result}
+        print(response_data)
+    else:
+        cursor.close()
+        response_data={'message':'comment not exist for user','data':[]}
+        print("result->",result)
+    return utils.response("Passed",response_data)
 
 
 
+def newComments(videoId,connection):
+    cursor=connection.cursor()
+    result=[]
+    fields=['user_id','comment','likes','dislikes']
+    
+    sql="""SELECT EXISTS(SELECT * FROM comment where video_id=%s)"""
+    cursor.execute(sql,(videoId,))
+    extracted_data=cursor.fetchone()
+    
+    if extracted_data[0]!=0:
+        sql="""SELECT user_id,comment,likes,dislikes from comment where video_id=%s ORDER BY `created_at` DESC"""
+        cursor.execute(sql,(videoId,))
+        extracted_data_ex=cursor.fetchall()
+        
+        for row in extracted_data_ex:
+          response_data=dict(zip(fields,row))
+          result.append(response_data)
+        response_data={'message':'COMMENT','data':result}
+        print(response_data)
+    else:
+        cursor.close()
+        response_data={'message':'comment not exist for user','data':[]}
+        print("result->",result)
+    return utils.response("Passed",response_data)
 
-
+def viewCommentsUser(videoId,connection):
+    print("user comments")
+    cursor=connection.cursor()
+    result=[]
+    fields=['first_name','profile_pic_link','comment','likes','dislikes']
+    
+    sql="""SELECT EXISTS(SELECT * FROM comment where video_id=%s)"""
+    cursor.execute(sql,(videoId,))
+    extracted_data=cursor.fetchone()
+    
+    if extracted_data[0]!=0:
+        sql="""SELECT u.first_name,u.profile_pic_link,c.comment,c.likes,c.dislikes from comment c inner join users u on u.id=c.user_id where video_id=%s"""
+        cursor.execute(sql,(videoId,))
+        extracted_data_ex=cursor.fetchall()
+        
+        for row in extracted_data_ex:
+          response_data=dict(zip(fields,row))
+          result.append(response_data)
+        response_data={'message':'USER COMMENTS','data':result}
+        print(response_data)
+    else:
+        cursor.close()
+        response_data={'message':'comment not exist for user','data':[]}
+        print("result->",result)
+    return utils.response("Passed",response_data)
