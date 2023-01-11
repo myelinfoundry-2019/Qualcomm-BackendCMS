@@ -15,8 +15,8 @@ def followChannel(decodedBody,connection):
     print(extracted_data[0])
     
     if extracted_data[0]!=0:
-        sql="""SELECT EXISTS(SELECT * FROM followers where channel_id=%s)"""
-        cursor.execute(sql,(channelId,))
+        sql="""SELECT EXISTS(SELECT * FROM followers where channel_id=%s and user_id=%s)"""
+        cursor.execute(sql,(channelId,userId,))
         extracted_data_views=cursor.fetchone()
     
     #sql="""select followers from followers where user_id=%s"""
@@ -69,18 +69,18 @@ def followChannel(decodedBody,connection):
         
     return utils.response("Passed",response_data)
 
-def getChannelViews(channelId,connection):
-    print("channel views request")
+def channelViews(channelId,connection):
+    print("channel  get views request")
     cursor = connection.cursor()
     result=[]
     #fields=['id','channel_name','channel_description','channel_profile_pic','created_at','channel_user_id','category']
-    feilds=['views']
+    fields=['total_views']
     sql="""SELECT EXISTS(SELECT * FROM channel where id=%s)"""
-    cursor.execute(sql,(userId,))
+    cursor.execute(sql,(channelId,))
     extracted_data=cursor.fetchone()
     
     if extracted_data[0]!=0:
-        sql="""SELECT views from followers where channel_id=%s"""
+        sql="""SELECT sum(views) from followers where channel_id=%s"""
         cursor.execute(sql,(channelId,))
         extracted_data_ex=cursor.fetchall()
         
@@ -90,4 +90,28 @@ def getChannelViews(channelId,connection):
             response_data={'message':'channel','data':result}
             #print(response_data)
     
+    return utils.response("Passed",response_data)
+
+def removeFollower(followerId,channelId,connection):
+    cursor=connection.cursor()
+    sql="""SELECT EXISTS(SELECT * FROM followers where id=%s and channel_id=%s)"""
+    cursor.execute(sql,(followerId,channelId,))
+    extracted_data=cursor.fetchone()
+    
+    if extracted_data[0]!=0:
+        sql="""SELECT * from followers where id=%s"""
+        cursor.execute(sql,(followerId,))
+        extracted_data=cursor.fetchall()
+        
+        sql="""DELETE from followers where id=%s"""
+        cursor.execute(sql,(followerId,))
+        connection.commit()
+        
+        response_data={'message':'follower removed','data':[]}
+        cursor.close()
+        print("result->",response_data)
+    else:
+        cursor.close()
+        response_data={'message':'follower not exist for channel','data':[]}
+        #print("result->",response_data)
     return utils.response("Passed",response_data)

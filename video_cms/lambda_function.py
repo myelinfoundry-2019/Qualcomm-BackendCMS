@@ -4,18 +4,16 @@ import channels
 import test
 import followers
 import comments
-import videoMetadata
 import commentreplies
 import videos
-#addsIngestRawPath = "/channel/video/addIngest" # POST , BODY
+import videofeatures
+
+
 
 #categoryAddRawPath = "/user/category/addCategory" # POST, BODY
 
-#videoChannelRawPath='/video/videoChannel' # POST, BODY
 
-testFunctionRawPath="/qualcommbackendcms/test" #GET, BODY
-
-
+#testFunctionRawPath="/qualcommbackendcms/test" #GET, BODY
 
 channelAddRawPath = "/channels/addChannel" #POST, BODY
 channelsViewRawPath = "/channels/viewChannel" #GET, BODY
@@ -25,12 +23,24 @@ deleteChannelRawPath = "/channels/deleteChannel" #DELETE, BODY
 top10ChannelRawPath = "/channels/top10Channel" #GET, BODY
 
 addFollowRawPath = "/channels/follow/addFollow" #POST, BODY
-getChannelViewsRawPath ="/channels/follow/getViews" #GET, BODY
+channelViewsRawPath = "/channels/follow/getChannelViews" #GET, BODY
+deleteFollowerRawPath = "/channels/follow/deleteFollower" #DELETE, BODY
 
+getVideoListRawPath = "/channels/videosList" #GET, BODY
 
-getVideoListRawPath ="/channels/videosList" #GET, BODY
-deleteVideoRawPath ="/channels/deleteVideo" #DELETE, BODY
-top10VideoRawPath = "/channels/top10Video" #GET, BODY
+addVideoRawPath = "/videos/addVideo" #POST, BODY
+updateVideoRawPath= "/videos/updateVideo" #PATCH, BODY
+deleteVideoRawPath = "/videos/deleteVideo" #DELETE, BODY
+searchVideoRawPath = "/videos/searchVideo" #GET, BODY
+top10VideoRawPath = "/videos/top10Video" #GET, BODY
+
+addVideoLikeRawPath = "/videos/addLike" #PATCH, BODY
+addVideoDislikeRawPath = "/videos/addDislike" #PATCH, BODY
+getVideoViewsRawPath ="/videos/getViews" #GET, BODY
+searchVideobyTagsRawPath ="videos/searchVideobyTag" #GET, BODY
+getVideoListLiveRawPath="/videos/liveVideoList" #GET, BODY
+getVideoListVodRawPath="/videos/vodVideoList" #Get, BODY
+
 
 commentsAddRawPath = "/comments/addComment" #POST, BODY
 commentsUpdateRawPath = "/comments/updateComment" #PATCH, BODY
@@ -39,18 +49,18 @@ commentsViewRawPath = "/comments/viewComments" #GET, BODY
 commentsCountRawPath = "/comments/commentCount" #POST, BODY
 commentsLikeRawPath = "/comments/addCommentLike" #PATCH, BODY
 commentsDislikeRawPath = "/comments/addCommentDislike" #PATCH, BODY
-topCommentsRawPath="/comments/topComments" #GET, BODY
-newCommentsRawPath="/comments/newComments" #GET, BODY
-viewCommentsUserRawPath="/comments/viewCommentsUser" #GET, BODY
+topCommentsRawPath = "/comments/topComments" #GET, BODY
+newCommentsRawPath = "/comments/newComments" #GET, BODY
+viewCommentsUserRawPath = "/comments/viewCommentsUser" #GET, BODY
 
 
-commentsReplyAddRawPath ="/replies/addReply" #POST,BODY
-commentsReplyUpdateRawPath ="/replies/updateReply" #PATCH,BODY
-commentsReplyDeleteRawPath ="/replies/deleteReply" #DELETE,BODY
-commentsReplyViewRawPath ="/replies/viewReply" #GET,BODY
-commentsReplyCountRawPath ="/replies/countReplies" #GET,BODY
-commentsReplyLikeRawPath ="/replies/addLikeReply" #PATCH,BODY
-commentsReplyDislikeRawPath ="/replies/addDislikeReply" #PATCH,BODY
+commentsReplyAddRawPath = "/replies/addReply" #POST,BODY
+commentsReplyUpdateRawPath = "/replies/updateReply" #PATCH,BODY
+commentsReplyDeleteRawPath = "/replies/deleteReply" #DELETE,BODY
+commentsReplyViewRawPath = "/replies/viewReply" #GET,BODY
+commentsReplyCountRawPath = "/replies/countReplies" #GET,BODY
+commentsReplyLikeRawPath = "/replies/addLikeReply" #PATCH,BODY
+commentsReplyDislikeRawPath = "/replies/addDislikeReply" #PATCH,BODY
 
 dbLogin={}
 
@@ -58,10 +68,10 @@ with open("creds.json", "r") as creds:
     dbLogin = json.load(creds)
 
 def lambda_handler(event, context):
-    print(event)
-    print("something")
-    event['rawPath']=event['resource']
     
+    print("something")
+    print(event)
+    event['rawPath']=event['resource']
     #print (event['rawPath'])
     
     
@@ -71,13 +81,15 @@ def lambda_handler(event, context):
                                         port=dbLogin['port'],
                                         database=dbLogin['db_name']);
                                         
-    if event['rawPath'] == testFunctionRawPath:
-        print("Test success")
-        return test.testFunction(connection)
+    # if event['rawPath'] == testFunctionRawPath:
+    #     print("Test success")
+    #     return test.testFunction(connection)
         
+   
         
     if event['rawPath'] == channelAddRawPath:
-        print("Channel success")
+        print("Channel add success")
+        #if event['queryStringParameters']['channel']=='addChannel':
         decodedBody = json.loads(event['body'])
         return channels.channelAdd(decodedBody,connection)
         
@@ -112,22 +124,53 @@ def lambda_handler(event, context):
         #userId = event['queryStringParameters']['user_id']
         #channelId = event['queryStringParameters']['channelId']
         decodedBody = json.loads(event['body'])
-        return followers.followChannel(decodedBody,connection)        
+        return followers.followChannel(decodedBody,connection)    
+        
            
-    if event['rawPath'] == getChannelViewsRawPath:
-        print("get Channels view success")
+    if event['rawPath'] == deleteFollowerRawPath:
+        print("Channel follower remove success")
+        followerId = event['queryStringParameters']['follower_id']
         channelId = event['queryStringParameters']['channel_id']
-        return followers.getChannelViews(channelId,connection)           
+        return followers.removeFollower(followerId,channelId,connection)
+            
             
     if event['rawPath'] == getVideoListRawPath:
         print("Channels view success")
         channelId = event['queryStringParameters']['channel_id']
-        return videos.videoList(channelId,connection)        
+        return videos.videoList(channelId,connection)  
+        
+    getVideoListLiveRawPath    
+    if event['rawPath'] == getVideoListLiveRawPath:
+        print("Channels live success")
+        userId = event['queryStringParameters']['user_id']
+        return videos.livevideoList(userId,connection) 
+        
+    if event['rawPath'] == getVideoListVodRawPath:
+        print("Channels vod success")
+        userId = event['queryStringParameters']['user_id']
+        return videos.vodvideoList(userId,connection) 
             
+    if event['rawPath'] == channelViewsRawPath:
+        print("get Channels get view success")
+        channelId = event['queryStringParameters']['channel_id']
+        return followers.channelViews(channelId,connection)
     
+    if event['rawPath'] == addVideoRawPath:
+        print("Channels view success")
+        print("add")
+        #channelId = event['queryStringParameters']['channel_id']
+        #videoId = event['queryStringParameters']['video_id']
+        decodedBody =json.loads(event['body'])
+        return videos.addVideo(decodedBody,connection) 
+        
+    if event['rawPath'] == updateVideoRawPath:
+        print("Channels view success")
+        decodedBody =json.loads(event['body'])
+        #videoId = event['queryStringParameters']['video_id']
+        return videos.updateVideo(decodedBody,connection) 
         
     if event['rawPath'] == deleteVideoRawPath:
-        print("Channels view success")
+        print("Video Delete success")
         channelId = event['queryStringParameters']['channel_id']
         videoId = event['queryStringParameters']['video_id']
         return videos.deleteVideo(channelId,videoId,connection) 
@@ -135,7 +178,28 @@ def lambda_handler(event, context):
     if event['rawPath'] == getVideoListRawPath:
         print("Channels view success")
         #channelId = event['queryStringParameters']['channel_id']
-        return videos.videoList(connection) 
+        return videos.videoList(connection)
+        
+    if event['rawPath'] == addVideoLikeRawPath:
+        print("Comment like success")
+        # videoId = event['pathParameters']['videoId']
+        # commentId = event['pathParameters']['commentId']
+        decodedBody = json.loads(event['body'])
+        return videofeatures.addVideoLike(decodedBody,connection)
+    
+    if event['rawPath'] == addVideoDislikeRawPath:
+        print("Comment like success")
+        # videoId = event['pathParameters']['videoId']
+        # commentId = event['pathParameters']['commentId']
+        decodedBody = json.loads(event['body'])
+        return videofeatures.addVideoDislike(decodedBody,connection)
+    
+    if event['rawPath'] == getVideoViewsRawPath:
+        print("get Channels get view success")
+        videoId = event['queryStringParameters']['video_id']
+        return videofeatures.getVideoViews(videoId,connection)
+    
+    
     
     if event['rawPath'] == commentsAddRawPath:
         print("Comment success")
