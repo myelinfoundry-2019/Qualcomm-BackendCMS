@@ -1,8 +1,8 @@
 
-drop database if exists db1;
-create database db1;
+drop database if exists videoDB;
+create database videoDB;
 
-use db1;
+use videoDB;
   DROP TABLE IF EXISTS `users`;
   CREATE TABLE `users`(
     `id` BIGINT(20) AUTO_INCREMENT,
@@ -254,38 +254,27 @@ DROP TABLE IF EXISTS `device_id`;
 
 DROP TABLE IF EXISTS `Channel`;
   CREATE TABLE `Channel`(
-  `id` INT NOT NULL,
+  `id` BIGINT NOT NULL,
   `Channel_name` VARCHAR(255) NOT NULL,
   `Channel_Description` VARCHAR(255) NULL,
   `created_at` TIMESTAMP NULL,
   `category` VARCHAR(45) NULL,
   `Channel_profile_pic` VARCHAR(255) NULL,
-  `Channel_users_id` BIGINT NOT NULL,
-  PRIMARY KEY (`idChannel`),
-  FOREIGN KEY (`Channel_users_id`) REFERENCES `users` (`id`)
-)ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8;
-
-DROP TABLE IF EXISTS `followers`;
-  CREATE TABLE `followers`(
-  `id` INT NOT NULL,
-  `Followers` VARCHAR(45) NULL,
-  `views` VARCHAR(45) NULL,
-  `Channel_id` INT NOT NULL,
   `users_id` BIGINT NOT NULL,
   PRIMARY KEY (`id`),
-  FOREIGN KEY (`Channel_id`) REFERENCES `Channel` (`id`) 
-  FOREIGN KEY (`users_id`) REFERENCES `users` (`id`)
-  ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8;
+  FOREIGN KEY (`users_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8;
+
+
 
   DROP TABLE IF EXISTS `videos`;
   CREATE TABLE `videos`(
     `id` BIGINT(20) NOT NULL,
     `videolink` VARCHAR(255) DEFAULT NULL,
     `thumbnail_url` VARCHAR(255) DEFAULT NULL,
-    `channel_id` BIGINT(20),
+    `channel_id` BIGINT NOT NULL,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `videos` (`id`, `created_at`),
-    FOREIGN KEY (`channel_id`) REFERENCES `channel` (`id`)
+    FOREIGN KEY (`channel_id`) REFERENCES `Channel` (`id`) ON DELETE CASCADE
   ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
 DROP TABLE IF EXISTS `videosfeature`;
@@ -300,12 +289,24 @@ DROP TABLE IF EXISTS `videosfeature`;
     `end_time` timestamp NULL DEFAULT NULL,
     `duration` timestamp NULL DEFAULT NULL,
     PRIMARY KEY (`video_id`),
-    FOREIGN KEY (`video_id`) REFERENCES `videos` (`id`),
-    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+    FOREIGN KEY (`video_id`) REFERENCES `videos` (`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)ON DELETE CASCADE
   ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
-DROP TABLE IF EXISTS `VideosMetadata`;
-  CREATE TABLE `Video_Metadata`(
+  DROP TABLE IF EXISTS `followers`;
+  CREATE TABLE `followers`(
+  `id` INT NOT NULL,
+  `Followers` VARCHAR(45) NULL,
+  `views` VARCHAR(45) NULL,
+  `channel_id` BIGINT NOT NULL,
+  `user_id` BIGINT NOT NULL,
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`channel_id`) REFERENCES `Channel` (`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+  ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8;
+
+DROP TABLE IF EXISTS `videosmetadata`;
+  CREATE TABLE `videosmetadata`(
   `video_id` BIGINT NOT NULL,
   `video_tittle` varchar(255) DEFAULT NULL,
   `video_Description` varchar(255) DEFAULT NULL,
@@ -319,10 +320,10 @@ DROP TABLE IF EXISTS `VideosMetadata`;
   `total_likes` BIGINT DEFAULT '0',
   `total_dislikes` BIGINT DEFAULT '0',
   PRIMARY KEY (`video_id`),
-  FOREIGN KEY (`videos_id`) REFERENCES `videos` (`id`),
-  FOREIGN KEY (`round_info_id`) REFERENCES `round_info` (`id`),
-  FOREIGN KEY (`game_info_id1`) REFERENCES `game_info` (`id`),
-  FOREIGN KEY (`tournament_info_id`) REFERENCES `tournament_info` (`id`)
+  FOREIGN KEY (`video_id`) REFERENCES `videos` (`id`),
+  FOREIGN KEY (`round_info_id`) REFERENCES `round_info` (`id`)ON DELETE CASCADE,
+  FOREIGN KEY (`game_info_id`) REFERENCES `game_info` (`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`tournament_info_id`) REFERENCES `tournament_info` (`id`) ON DELETE CASCADE
  )ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
 
@@ -336,8 +337,8 @@ DROP TABLE IF EXISTS `comment`;
   `users_id` BIGINT NOT NULL,
   `videos_id` BIGINT NOT NULL,
   PRIMARY KEY (`id`),
-  FOREIGN KEY (`users_id`) REFERENCES `users` (`id`)
-  FOREIGN KEY (`videos_id`) REFERENCES `videos` (`id`)
+  FOREIGN KEY (`users_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`videos_id`) REFERENCES `videos` (`id`) ON DELETE CASCADE
   ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8;
 
 
@@ -353,8 +354,8 @@ DROP TABLE IF EXISTS `commentreply`;
   `users_id` BIGINT NOT NULL,
   `comment_id` INT NOT NULL,
   PRIMARY KEY (`id`),
-  FOREIGN KEY (`users_id`) REFERENCES `users` (`id`)
-  FOREIGN KEY (`comment_id`) REFERENCES `comment` (`id`)
+  FOREIGN KEY (`users_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`comment_id`) REFERENCES `comment` (`id`) ON DELETE CASCADE
   ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8;
 
 
